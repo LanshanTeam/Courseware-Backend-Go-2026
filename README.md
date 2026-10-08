@@ -13,7 +13,7 @@
 | 00 | Go 语法基础       | Go 程序结构、数据类型、变量与常量、运算符、类型转换、字符串、分支与循环、函数、fmt 包      | 无具体负责人  |
 | 01 | 复合数据类型与函数进阶   | 数组、切片、map、值类型与引用类型、高阶函数与闭包、go test 单元测试                | 待定  |
 | 02 | 面向对象基础        | 包与模块、结构体、方法、接口、泛型、面向对象编程思想                            | 刘庆喆  |
-| 03 | 常用标准库         | fmt、io、os、strings、bytes、time、math/rand、文件与目录操作等      | 待定  |
+| 03 | 常用标准库         | fmt、io、os、strings、bytes、time、math/rand、文件与目录操作等      | 凌珑  |
 | 04 | 并发编程          | 操作系统并发基础、goroutine、channel、互斥锁、WaitGroup、常见并发模型      | 刘庆喆  |
 | 05 | Web 开发        | 计算机网络基础、HTTP、Gin 框架与中间件、Hertz、项目结构、RESTful API       | 盛小峰  |
 | 06 | MySQL         | 安装与命令行操作、SQL 语句、Go 数据库操作、GORM ORM 框架                  | 待定  |
