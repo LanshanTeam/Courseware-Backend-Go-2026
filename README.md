@@ -15,7 +15,7 @@
 | 02 | 面向对象基础        | 包与模块、结构体、方法、接口、泛型、面向对象编程思想                            | 待定  |
 | 03 | 常用标准库         | fmt、io、os、strings、bytes、time、math/rand、文件与目录操作等      | 待定  |
 | 04 | 并发编程          | 操作系统并发基础、goroutine、channel、互斥锁、WaitGroup、常见并发模型      | 待定  |
-| 05 | Web 开发        | 计算机网络基础、HTTP、Gin 框架与中间件、Hertz、项目结构、RESTful API       | 待定  |
+| 05 | Web 开发        | 计算机网络基础、HTTP、Gin 框架与中间件、Hertz、项目结构、RESTful API       | 盛小峰  |
 | 06 | MySQL         | 安装与命令行操作、SQL 语句、Go 数据库操作、GORM ORM 框架                  | 待定  |
 | 07 | 非关系型数据库       | Redis（缓存、锁）、MongoDB（文档存储）                              | 待定  |
 | 08 | 容器化           | Linux 基础、Docker 基础概念、镜像与容器、Dockerfile 编写、Compose 编排 | 待定  |
