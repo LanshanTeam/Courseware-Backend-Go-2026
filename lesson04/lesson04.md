@@ -9,7 +9,7 @@
 但是除了涉及到硬件层面的处理的时候(比如单片机)，我们往往不需要直接处理硬件的数据，而操作系统就是硬件和软件之间的这个桥梁。  
 
 操作系统将硬件层的具体的行为封装为系统调用的接口给软件层进行使用。虽然不同的操作系统之间提供的接口都差不多，但是还是有一定的区别。
-所以有的语言，尤其是c、cpp、go这类编译为cpu二进制可执行文件的编译性语言来说，不同的操作系统之间不能共通，导致有的应用程序会有多个操作系统的版本，这也可以看到跨平台的能力对于一门语言来说也是一项加分项。  
+所以有的语言，尤其是c、cpp、go这类编译为cpu二进制可执行文件的编译性语言来说，不同的操作系统之间的二进制文件不能共通，导致有的应用程序会有多个操作系统的版本，这也可以看到跨平台的能力对于一门语言来说也是一项加分项。  
 
 虽然在后续的课程以及开发过程中，我们很少会直接通过系统调用，大多数情况都是使用封装好的包进行编程，但是了解底层知识可以有助于设计出更快、更优雅的~~屎山~~代码。  
 
@@ -31,12 +31,12 @@
 进程是一个正在运行的程序实例，操作系统会为每一个进程分配彼此隔离的用户空间，避免不同的程序访问对方的数据~~真要能这样我打游戏随便就可以一刀999~~。
 一个程序可以有一个进程，也可以有多个，这取决于应用本身。  
 
-同一个进程至少包含了一个线程，往上基本不封顶，但是如果进程像操作系统申请的内存太多了还是有被直接OOM的风险的。  
+同一个进程至少包含了一个线程，往上基本不封顶，但是如果进程向操作系统申请的内存太多了还是有被直接OOM的风险的。  
 
 如果用刚才的例子做比如，那么进程就像是某个学科总的的作业，而线程就是该学科的具体的某一本作业，一个科目可以同时有很多本作业，但是不能没有作业。
 以后面试的时候，如果面试官问进程和线程的区别，你就可以想想今天的例子。  
 ## 一个小结
-上到这里，你可能还有点懵，不重要，这下东西可以以后慢慢消化，go本身的并发是很简单的。
+上到这里，你可能还有点懵，不重要，这些东西可以以后慢慢消化，go本身的并发是很简单的。
 go的runtime的**GMP模型**(课后可以去了解一下)已经将线程的问题处理好了，实际业务的时候不用考虑线程池等细节。  
 # go并发编程
 ## goroutine
@@ -101,12 +101,12 @@ func Add2(){
             }
         }()//启动10个goroutine进行计算
     }
-	time.Sleep(5*time.Second)//确保时候goroutine都执行完成
+	time.Sleep(5*time.Second)//确保所以goroutine都执行完成
 	fmt.Println(a)//输出一个奇奇怪怪的数字，每次还不一样，但是一定小于100000
 }
 ```
 这里我们可以发现，Add2的结果和预期的不同，这就是并发的一个典型的问题。  
-从代码来看，a++是一次操作，不就是a+1嘛，但是实际上，对于cpu来说这是一个多部操作：
+从代码来看，a++是一次操作，不就是a+1嘛，但是实际上，对于cpu来说这是一个多步操作：
 1. cpu将a的值从内存中取出放入cpu寄存器
 2. cpu从寄存器中取出+1后放回寄存器
 3. cpu将值重新放回内存中a的地址
@@ -131,7 +131,7 @@ func AddAtomic(){
 	fmt.Println(a.Load())// 输出 100000
 }
 ```
-如果只是对于单个变量来说，Atomic基本已经够用了，但是如果我们需要确保多部操作的原子性，我们就需要引入`sync`包的互斥锁。
+如果只是对于单个变量来说，Atomic基本已经够用了，但是如果我们需要确保多步操作的原子性，我们就需要引入`sync`包的互斥锁。
 
 ### 锁
 #### 互斥锁 sync.Mutex
@@ -145,10 +145,10 @@ func AddMutex(){
     for range 10{
         go func(){
             for range 10000{
-                mu.Luck()
+                mu.Lock()
                 a++
                 b--
-                mu.Unluck()
+                mu.Unlock()
             }
         }()
     }
@@ -234,7 +234,7 @@ go语言有个经典的话 **“不要通过共享内存通信，而要通过通
 channel和map、切片一样，是一种引用类型，可以直接在函数之间传递。
 当然，创建的时候也需要使用make()
 ```go
-ch1:=make(chan int,5)// 变量ch1的类型是“ch int",缓冲区的大小为5，可以放5个int类型的数据
+ch1:=make(chan int,5)// 变量ch1的类型是“chan int",缓冲区的大小为5，可以放5个int类型的数据
 ch2:=make(chan myType)// 这里也可以写自定义的类型，第二个参数不写默认为0，表示这是一个无缓冲的通道
 var ch3 chan string// 未初始化，ch3为默认的nil
 ```
@@ -250,7 +250,7 @@ func Channel1(){
 			ch1 <- i
 			fmt.Println("已放入",i)
         }
-		close(ch1)//关闭通道，关闭后的通道不嫩再发送数据，会panic
+		close(ch1)//关闭通道，关闭后的通道不能再发送数据，会panic
     }()
 	time.Sleep(1*time.Second)
 	for out:=range ch1{
@@ -270,7 +270,7 @@ func Channel2(){
 		time.Sleep(time.Second)
 	    close(ch2)
     }()
-	data,ok:=<-ch2// 对的，读取操作也可以有两个接收值，ok表示的是通道是否正常，正常读取时都为true，关闭后才是false
+	data,ok:=<-ch2// 对的，读取操作也可以有两个接收值，ok表示的是读取的数据是否有效，正常读取时都为true，关闭后并且数据读取完才是false
 	fmt.Println(data,ok)
 }
 ```
@@ -364,7 +364,7 @@ func Channel7(){
 简单来说就是发送的时候，只有在缓冲区满了的情况下才会阻塞。
 而接收的时候，只有在缓冲区为空的时候才会阻塞。
 #### <-ch 类型和ch<-类型
-前面我们的channel的类型都是`ch type`，但是有的时候我们只希望这个channel只能发送或者接受，这时候就可以通过`<-ch type`和`ch<- type`进行限制：
+前面我们的channel的类型都是`chan T`，但是有的时候我们只希望这个channel只能发送或者接受，这时候就可以通过`<-chan T`和`chan<- T`进行限制：
 ```go
 func Channel8(){
     test1:=func(ch chan<- int){
@@ -434,8 +434,8 @@ func Add4(){
 func Afunc(){
 	var mu sync.Mutex
 	go func(){
-		mu.Luck()
-		defer mu.Unluck()
+		mu.Lock()
+		defer mu.Unlock()
 		......
     }()
 }
@@ -509,15 +509,15 @@ func Defer4(){
 #### 坑
 前面的Add中你可能发现了我没有使用defer mu.Unlock(),而是老老实实的mu.Unlock()手动管理。这是因为这里是在循环内部，如果在循环内部执行defer的话，每一个循环都注册一个defer函数，那开销也不小了。
 而且在刚才的例子中，如果通过defer释放锁，那么Unlock就会在循环外面才执行，实际上在第二次循环的时候就直接因为锁未释放就死锁了。
-所以有的时候虽然defer很方面，但是该手动管理的时候也别想着偷懒了。
+所以有的时候虽然defer很方便，但是该手动管理的时候也别想着偷懒了。
 
 ### select
-前面提到channel的发送和接收是会发生阻塞的，但是实际情况下不会让你一直阻塞在哪里，这时候我们可以使用`select`关键字通过监听多个channel，只需要至多一个channel就绪就可以接着执行。
+前面提到channel的发送和接收是会发生阻塞的，但是实际情况下不会让你一直阻塞在哪里，这时候我们可以使用`select`关键字通过监听多个channel，只需要至少一个channel就绪就可以接着执行(无default)。
 这里直接说可能不太清楚，先来个例子：
 ```go
 func Select1() {
     ch1 := make(chan int, 1)
-    ch2 := make(chan struct{}, 1)
+    ch2 := make(chan struct{})
     timer := time.NewTimer(5 * time.Second)
     beginner := make(chan struct{})
     go func() {
@@ -537,7 +537,7 @@ func Select1() {
     case data := <-ch1:
         fmt.Println("ch1接收到数据:", data)
     case ch2<-struct{}{}:
-        fmt.Println("ch2接收到数据")
+        fmt.Println("ch2已发送数据")
     case <-timer.C:
         fmt.Println("已超时")
     }
@@ -623,8 +623,12 @@ func Context1(){
 	wg.Go(func(){
 	    for{
 			select{
-			case data:=<-ch:
-				fmt.Println("2 已接收数据：",data)
+			case data,ok:=<-ch:
+				if !ok{
+                    fmt.Println("2 已退出接收")
+                    return
+                }
+				fmt.Println("2 已接收数据：", data)
             case <-ctx.Done():
 				fmt.Println("2 已退出接收")
                 return
