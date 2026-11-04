@@ -701,3 +701,71 @@ func Context3() {
 }
 ```
 这里可以发现2和3几乎同时退出，即使3的超时为3秒，但是因为2触发超时取消了，3也跟着取消，同时1没有受到影响
+## sync包的补充
+### sync.One
+程序运行时，懒加载初始化比较常用，保证整个生命周期中，一个sync.One对象仅会执行一次Do方法，多余的会跳过。
+比如：
+```go
+func Sync1(){
+    var init sync.Once//依旧是0值可用
+    num := 0
+    for range 10 {
+        init.Do(func() {
+            num ++
+        })
+    }
+    fmt.Println(num)//输出 1
+}
+```
+### sync.Map
+来了来了，老早之前就说要讲的东西，sync.Map。当成官方提供的并发安全(但是类型不安全)的map即可，在读极多写极少的情况下性能优于读写锁，但是储存的开销更大。
+其实相当于是底层维护了两个map，读路径不走锁，但是写路径就得改两个。具体的底层实现感兴趣的可以自己去了解一下。
+
+来上个例子：
+```go
+func Sync2(){
+	var m sync.Map//还是0值可用，貌似sync包的常用的都是0值可用，没了解过hh
+	//1. 存：Store(key,value)
+	m.Store("name","望海夯")
+	m.Store("age",18)
+	
+	//2. 取：Load(key)(value any,ok bool)
+	name,ok:=m.Load("name")
+	if ok{
+		fmt.Println(name)
+    }
+	
+	//3. 存在就返回，不存在就写入：LoadOrStore
+	v, loaded := m.LoadOrStore("gender", "male")
+    fmt.Println(v, loaded) // loaded=true代表原本就存在
+
+    // 4. 删除：Delete
+    m.Delete("age")
+
+    // 5. 遍历：Range
+    m.Range(func(k, v interface{}) bool {
+        fmt.Printf("key:%v, val:%v\n", k, v)
+        return true // 返回true继续遍历，false停止
+    })
+}
+```
+不过要注意的是，sync.Map的key和value的类型都是any，使用的时候需要类型断言，不然程序分分钟炸给你看
+## 并发模型
+时间、篇幅问题，讲到这里的时候估计已经过了很久了，加上目前语法可能还不熟练，就自己下去自学吧。
+
+[并发模型](并发模型.md)
+
+# 作业
+考虑到大家对提交作业的积极性不是很高，那这次的作业就以自学为主了，不用提交，有什么问题可以询问ai或者qq上联系那个洋葱切片头像的那条区都可以。
+
+## level1
+自己运行一下课件中的例子，尝试理解一下，至少能够掌握goroutine、channel、defer、select和锁的基本用法，写出来不死锁，能看懂代码，不用提交
+## level2
+手动使用map在内存中实现数据的增删查改操作，保证并发安全，并启动多个goroutine模拟并发读写数据库的情况。
+
+## level3
+学习go的并发模型，手动实现worker pool（说白了就是启动一定数量的goroutine去执行传入的任务），封装为一个工具包，使得外部库可以通过你的包提供的方法进行task的分发等管理(记得管理goroutine的生命周期，不要用完就不管了)。
+可以考虑一下如何设计API可以让用户使用的更方便
+
+## level4
+设计一个抢票系统，大量用户抢限量的票，票有不同的种类，票以分批发放的形式，同时需要限制用户的抢票频率，做到票不多放也不少放。
