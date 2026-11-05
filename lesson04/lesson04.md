@@ -309,15 +309,15 @@ func Channel5(){
 	go func(){
         ch5<-"望海夯"
         fmt.Println("成功发送")
-    }
+    }()
 	go func(){
-		data,ok:=<-ch5
+		_,ok:=<-ch5
 		if ok{
 			fmt.Println("成功接收")
         }else{
 			fmt.Println("接收失败")
         }
-    }
+    }()
 	time.Sleep(5*time.Second)
 }
 ```
@@ -398,7 +398,7 @@ func Add3(){
 				mu.Unlock()
 			}
 			wg.Done()// 其实等价于wg.Add(-1)，源码就是这样的
-        }
+        }()
     }
 	wg.Wait()
 	fmt.Println(a)
@@ -447,7 +447,7 @@ func Defer1(){
 	defer func(){
 		fmt.Println("defer1")
     }()
-	a:=rand.Int()%2
+	a:=rand.Int()%2 //math/rand包
 	if a==1{
 		return
     }
@@ -461,7 +461,7 @@ func Defer1(){
 func Defer2(){
 	defer func(){
 		if err:=recover();err!=nil{
-			fmt.Println("捕获到错误：",err.Error())
+			fmt.Println("捕获到："panic,err)
         }
     }()
 	panic("一个panic")
@@ -743,17 +743,17 @@ func Sync2(){
     m.Delete("age")
 
     // 5. 遍历：Range
-    m.Range(func(k, v interface{}) bool {
+    m.Range(func(k, v any) bool {
         fmt.Printf("key:%v, val:%v\n", k, v)
         return true // 返回true继续遍历，false停止
     })
 }
 ```
 不过要注意的是，sync.Map的key和value的类型都是any，使用的时候需要类型断言，不然程序分分钟炸给你看
-## 并发模型
+## 并发模式
 时间、篇幅问题，讲到这里的时候估计已经过了很久了，加上目前语法可能还不熟练，就自己下去自学吧。
 
-[并发模型](并发模型.md)
+[并发模式](并发模式.md)
 
 # 作业
 考虑到大家对提交作业的积极性不是很高，那这次的作业就以自学为主了，不用提交，有什么问题可以询问ai或者qq上联系那个洋葱切片头像的那条区都可以。
@@ -764,8 +764,9 @@ func Sync2(){
 手动使用map在内存中实现数据的增删查改操作，保证并发安全，并启动多个goroutine模拟并发读写数据库的情况。
 
 ## level3
-学习go的并发模型，手动实现worker pool（说白了就是启动一定数量的goroutine去执行传入的任务），封装为一个工具包，使得外部库可以通过你的包提供的方法进行task的分发等管理(记得管理goroutine的生命周期，不要用完就不管了)。
+学习go的并发模式，手动实现worker pool（说白了就是启动一定数量的goroutine去执行传入的任务），封装为一个工具包，使得外部库可以通过你的包提供的方法进行task的分发等管理(记得管理goroutine的生命周期，不要用完就不管了)。
 可以考虑一下如何设计API可以让用户使用的更方便
 
 ## level4
 设计一个抢票系统，大量用户抢限量的票，票有不同的种类，票以分批发放的形式，同时需要限制用户的抢票频率，做到票不多放也不少放。
+或者也可以做一个自己感兴趣的东西
