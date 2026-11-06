@@ -65,18 +65,18 @@ goroutine是用户级别的线程，相比传统操作系统级别的线程，go
 前面讲了这么多，你可能暂时不是很理解，不重要，目前你们只需要知道相比传统线程，goroutine更轻量，可以创建更多。
 在go语言中，创建一个goroutine非常简单，只需要在需要执行的函数前面加上`go`关键字即可：
 ```go
-func Demo1(){
-	fmt.Println(time.Now())
-	go time.Sleep(5*time.Second)
-	fmt.Println(time.Now())
-}//这是直接调用已有函数
+func Demo1() {
+    fmt.Println(time.Now())
+    go time.Sleep(5 * time.Second)
+    fmt.Println(time.Now())
+} //这是直接调用已有函数
 
-func Demo2(a *int){
-	go func(){
-		time.Sleep(5*time.Second)
+func Demo2(a *int) {
+    go func() {
+        time.Sleep(5 * time.Second)
         (*a)++
     }()
-}//这是启动了一个闭包函数
+} //这是启动了一个闭包函数
 ```
 总之你只需要在你想异步执行的函数前面加上`go`即可。  
 当然，创建很简单，难点是在于如何管理goroutine以及处理并发问题~~真要这么点东西就不至于单独开一节课了~~
@@ -84,25 +84,25 @@ func Demo2(a *int){
 ## 互斥锁和原子操作
 现在我们学了如何启动goroutine并发执行任务，你看到你手上执行十万次加法的单线程操作，觉得太慢了，想给他升级为10个goroutine并发执行，这样不就快10倍了吗，说干就干：
 ```go
-func Add1(){
-	a:=0
-	for range 100000{
-		a++
+func Add1() {
+    a := 0
+    for range 100000 {
+        a++
     }
-	fmt.Println(a)//输出 100000 很合理
+    fmt.Println(a) //输出 100000 很合理
 }
 
-func Add2(){
-	a:=0
-	for range 10{
-		go func(){
-			for range 10000{
-				a++
+func Add2() {
+    a := 0
+    for range 10 {
+        go func() {
+            for range 10000 {
+                a++
             }
-        }()//启动10个goroutine进行计算
+        }() //启动10个goroutine进行计算
     }
-	time.Sleep(5*time.Second)//确保所以goroutine都执行完成
-	fmt.Println(a)//输出一个奇奇怪怪的数字，每次还不一样，但是一定小于100000
+	time.Sleep(5 * time.Second) //确保所以goroutine都执行完成
+    fmt.Println(a)              //输出一个奇奇怪怪的数字，每次还不一样，但是一定小于100000
 }
 ```
 这里我们可以发现，Add2的结果和预期的不同，这就是并发的一个典型的问题。  
@@ -117,18 +117,18 @@ func Add2(){
 ### 原子操作
 针对上述的赋值操作，go标准库提供了原子操作库`sync/atomic`，对于一些变量的赋值操作，可以原子性的进行修改：
 ```go
-func AddAtomic(){
-	var a atomic.Int64// 0值可用
-	a.Store(0)// 赋值为0
-	for range 10{
-		go func(){
-		    for range 10000{
-				a.Add(1)
+func AddAtomic() {
+    var a atomic.Int64 // 0值可用
+    a.Store(0)         // 赋值为0
+    for range 10 {
+        go func() {
+            for range 10000 {
+                a.Add(1)
             }
-		}()
+        }()
     }
-	time.Sleep(5*time.Second)
-	fmt.Println(a.Load())// 输出 100000
+    time.Sleep(5 * time.Second)
+    fmt.Println(a.Load()) // 输出 100000
 }
 ```
 如果只是对于单个变量来说，Atomic基本已经够用了，但是如果我们需要确保多步操作的原子性，我们就需要引入`sync`包的互斥锁。
@@ -138,13 +138,13 @@ func AddAtomic(){
 Atomic只能支持部分类型，用起来往往不够灵活，比如我们想限制某一些操作在同一时刻只能有一个线程执行，Atomic便无法实现，于是我们引入了互斥锁。
 先来个简单的例子：
 ```go
-func AddMutex(){
-    a:=0
-    b:=100000
-    var mu sync.Mutex// 0值可用
-    for range 10{
-        go func(){
-            for range 10000{
+func AddMutex() {
+    a := 0
+    b := 100000
+    var mu sync.Mutex // 0值可用
+    for range 10 {
+        go func() {
+            for range 10000 {
                 mu.Lock()
                 a++
                 b--
@@ -152,8 +152,8 @@ func AddMutex(){
             }
         }()
     }
-    time.Sleep(5*time.Second)
-    fmt.Println(a,b)// 输出 100000 0
+    time.Sleep(5 * time.Second)
+    fmt.Println(a, b) // 输出 100000 0
 }
 ```
 在这个例子中，我们可以使用sync.Mutex保护a+1和b-1两个操作。那么为什么锁可以保护a，b两个变量？
@@ -242,21 +242,21 @@ var ch3 chan string// 未初始化，ch3为默认的nil
 #### 发送、接收
 我们可以向channel中传入或者取出数据：
 ```go
-func Channel1(){
-	ch1:=make(chan int,5)
-	ch1 <- -1 //使用 ch<- 向通道中发送数据，因为缓冲区没有满，所以不会阻塞
-	go func(){
-		for i:=range 5{
-			ch1 <- i
-			fmt.Println("已放入",i)
+func Channel1() {
+    ch1 := make(chan int, 5)
+    ch1 <- -1 //使用 ch<- 向通道中发送数据，因为缓冲区没有满，所以不会阻塞
+    go func() {
+        for i := range 5 {
+            ch1 <- i
+            fmt.Println("已放入", i)
         }
-		close(ch1)//关闭通道，关闭后的通道不能再发送数据，会panic
+        close(ch1) //关闭通道，关闭后的通道不能再发送数据，会panic
     }()
-	time.Sleep(1*time.Second)
-	for out:=range ch1{
-	    fmt.Println("out:",out)	
-	}
-	fmt.Println("END")
+    time.Sleep(1 * time.Second)
+    for out := range ch1 {
+        fmt.Println("out:", out)
+    }
+    fmt.Println("END")
 }
 ```
 `for range ch1`会一直尝试读取数据，直到close(ch1)
@@ -264,37 +264,37 @@ func Channel1(){
 接下来我们说一下close的一些问题：
 ##### 操作已关闭的channel
 ```go
-func Channel2(){
-	ch2:=make(chan int)
-    go func(){
-		time.Sleep(time.Second)
-	    close(ch2)
+func Channel2() {
+    ch2 := make(chan int)
+    go func() {
+        time.Sleep(time.Second)
+        close(ch2)
     }()
-	data,ok:=<-ch2// 对的，读取操作也可以有两个接收值，ok表示的是读取的数据是否有效，正常读取时都为true，关闭后并且数据读取完才是false
-	fmt.Println(data,ok)
+    data, ok := <-ch2 // 对的，读取操作也可以有两个接收值，ok表示的是读取的数据是否有效，正常读取时都为true，关闭后并且数据读取完才是false
+    fmt.Println(data, ok)
 }
 ```
 我们会在一秒之后打印 0 false，表示读取已关闭的channel不会阻塞，并且阻塞中的读取操作也会直接接收到零值.
 
 ```go
-func Channel3(){
-	ch3:=make(chan int)
-	go func(){
-	    time.Sleep(time.Second)
-		close(ch3)
+func Channel3() {
+    ch3 := make(chan int)
+    go func() {
+        time.Sleep(time.Second)
+        close(ch3)
     }()
-	ch3<- 1
-	fmt.Println("END")
+    ch3 <- 1
+    fmt.Println("END")
 }
 ```
 这里会直接触发panic，说明已关闭的通道是不可写入的，所以我们在使用的时候一般是由发送方管理channel的close，避免别的地方一个close，发送方直接panic。
 
 ##### 重复close
 ```go
-func Channel4(){
-	ch4:=make(chan int)
-	close(ch4)
-	close(ch4)
+func Channel4() {
+    ch4 := make(chan int)
+    close(ch4)
+    close(ch4)
     fmt.Println("END")
 }
 ```
@@ -304,58 +304,58 @@ func Channel4(){
 #### 缓冲区以及是否初始化的区别
 先说重要的，如果一个channel不初始化会怎么样：
 ```go
-func Channel5(){
-	var ch5 chan string
-	go func(){
-        ch5<-"望海夯"
+func Channel5() {
+    var ch5 chan string
+    go func() {
+        ch5 <- "望海夯"
         fmt.Println("成功发送")
     }()
-	go func(){
-		_,ok:=<-ch5
-		if ok{
-			fmt.Println("成功接收")
-        }else{
-			fmt.Println("接收失败")
+    go func() {
+        _, ok := <-ch5
+        if ok {
+            fmt.Println("成功接收")
+        } else {
+            fmt.Println("接收失败")
         }
     }()
-	time.Sleep(5*time.Second)
+    time.Sleep(5 * time.Second)
 }
 ```
 我们会发现等了半天，一行输出都没有，这说明无论是发送还是接收都是永久阻塞，当然不是说不能channel赋值为nil，后面学习了select之后我们就可以通过nil值的channel关闭特定的case，算是高阶操作了~~反正我没用过~~。
 
 然后是无缓冲通道：
 ```go
-func Channel6(){
-	ch6:=make(chan string)
-	go func(){
-		ch6<-"魂星"
+func Channel6() {
+    ch6 := make(chan string)
+    go func() {
+        ch6 <- "魂星"
         fmt.Println("成功发送")
     }()
-	time.Sleep(2*time.Second)
-    go func(){
-        data,ok:=<-ch6
-        if ok{
-            fmt.Println("第一个goroutine接收成功：",data)
-        }else{
+    time.Sleep(2 * time.Second)
+    go func() {
+        data, ok := <-ch6
+        if ok {
+            fmt.Println("第一个goroutine接收成功：", data)
+        } else {
             fmt.Println("第一个goroutine未成功接收")
         }
-	}()
+    }()
 }
-func Channel7(){
-	ch7:=make(chan string)
-	go func(){
-        data,ok:=<-ch7
-        if ok{
-            fmt.Println("第一个goroutine接收成功：",data)
-        }else{
+func Channel7() {
+    ch7 := make(chan string)
+    go func() {
+        data, ok := <-ch7
+        if ok {
+            fmt.Println("第一个goroutine接收成功：", data)
+        } else {
             fmt.Println("第一个goroutine未成功接收")
         }
     }()
-    time.Sleep(2*time.Second)
-    go func(){
-        ch7<-"魂星"
+    time.Sleep(2 * time.Second)
+    go func() {
+        ch7 <- "魂星"
         fmt.Println("成功发送")
-	}()
+    }()
 }
 ```
 我们会发现两个例子中两个goroutine的输出总是同时出现，相当于是无论是先接收还是先发送，都会阻塞，直到有对应的goroutine执行发送或者接收，两个goroutine才会继续执行。
@@ -366,16 +366,16 @@ func Channel7(){
 #### <-ch 类型和ch<-类型
 前面我们的channel的类型都是`chan T`，但是有的时候我们只希望这个channel只能发送或者接受，这时候就可以通过`<-chan T`和`chan<- T`进行限制：
 ```go
-func Channel8(){
-    test1:=func(ch chan<- int){
+func Channel8() {
+    test1 := func(ch chan<- int) {
         ch <- 1
         //<-ch
     }
-    test2:=func(ch <-chan int){
+    test2 := func(ch <-chan int) {
         <-ch
-        //ch<-1	
+        //ch<-1
     }
-    ch:=make(chan int,1)
+    ch := make(chan int, 1)
     go test1(ch)
     go test2(ch)
     time.Sleep(1 * time.Second)
@@ -385,44 +385,44 @@ func Channel8(){
 前面我们为了确保goroutine能够运行完成是采用的在主线程中time.Sleep的方式，这种方式一方面是不够灵活，另一方面是设置的时间不一定能保证goroutine执行完成。
 所以sync包中有一个WaitGroup用于帮助我们解决这一个问题，例如前面100000次累加就可以升级一下：
 ```go
-func Add3(){
-	a:=0
-	var mu sync.Mutex
-	var wg sync.WaitGroup // 依旧0值可用
-	for range 10{
-		wg.Add(1)//也可以直接在循环外Add(10)，反正必须在goroutine外面Add，并且数量得一致
-        go func(){
-			for range 10000{
-				mu.Lock()
-				a++
-				mu.Unlock()
-			}
-			wg.Done()// 其实等价于wg.Add(-1)，源码就是这样的
-        }()
+func Add3() {
+    a := 0
+    var mu sync.Mutex
+    var wg sync.WaitGroup // 依旧0值可用
+    for range 10 {
+        wg.Add(1) //也可以直接在循环外Add(10)，反正必须在goroutine外面Add，并且数量得一致
+        go func() {
+            for range 10000 {
+                mu.Lock()
+                a++
+                mu.Unlock()
+            }
+            wg.Done() // 其实等价于wg.Add(-1)，源码就是这样的
+		}()
     }
-	wg.Wait()
-	fmt.Println(a)
+    wg.Wait()
+    fmt.Println(a)
 }
 ```
 WaitGroup本质上就是一个计数器，虽然我们也可以使用锁手搓一个，但是有现成的工具不是更好吗。
 
 此外你是不是觉得每次都需要Add(),Done()很麻烦，没事，go 1.25添加了一个Go(func())方法，我们只需要将需要执行的代码封装为无传参无返参的闭包函数传进去即可：
 ```go
-func Add4(){
-	a:=0
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-	for range 10{
-		wg.Go(func(){
-            for range 10000{
+func Add4() {
+    a := 0
+    var mu sync.Mutex
+    var wg sync.WaitGroup
+    for range 10 {
+        wg.Go(func() {
+            for range 10000 {
                 mu.Lock()
                 a++
                 mu.Unlock()
             }
         })
     }
-	wg.Wait()
-	fmt.Println(a)
+    wg.Wait()
+    fmt.Println(a)
 }
 ```
 ## 一些关键字
@@ -432,11 +432,11 @@ func Add4(){
 前面的例子中：
 ```go
 func Afunc(){
-	var mu sync.Mutex
-	go func(){
-		mu.Lock()
-		defer mu.Unlock()
-		......
+    var mu sync.Mutex
+    go func(){
+        mu.Lock()
+        defer mu.Unlock()
+        ......
     }()
 }
 ```
@@ -444,14 +444,14 @@ func Afunc(){
 `go`是启动一个goroutine异步执行后面的函数，而`defer`是将后面的函数注册，在当前函数return之后执行。
 ```go
 func Defer1(){
-	defer func(){
-		fmt.Println("defer1")
+    defer func(){
+        fmt.Println("defer1")
     }()
-	a:=rand.Int()%2 //math/rand包
-	if a==1{
-		return
+    a:=rand.Int()%2 //math/rand包
+    if a==1{
+        return
     }
-	fmt.Println("a不是1")
+    fmt.Println("a不是1")
 }
 ```
 我们会发现无论随机进去哪一个分支，什么时候return，defer中的函数都被执行了。
@@ -459,13 +459,13 @@ func Defer1(){
 即使程序panic了defer也会依次执行，事实上panic不一定会使程序崩溃，正好和defer一起讲了，算是很常见的用法了：
 ```go
 func Defer2(){
-	defer func(){
-		if err:=recover();err!=nil{
-			fmt.Println("捕获到："panic,err)
+    defer func(){
+        if err:=recover();err!=nil{
+            fmt.Println("捕获到："panic,err)
         }
     }()
-	panic("一个panic")
-	fmt.Println("我还活着")
+    panic("一个panic")
+    fmt.Println("我还活着")
     panic("第二个panic")
 }
 ```
@@ -475,7 +475,7 @@ func Defer2(){
 然后一个函数中如果注册了多个defer，则会按照后注册先执行的顺序依次执行：
 ```go
 func Defer3(){
-	defer fmt.Println("第一个defer")
+    defer fmt.Println("第一个defer")
     defer fmt.Println("第二个defer")
     defer fmt.Println("第三个defer")
 }
@@ -485,21 +485,21 @@ func Defer3(){
 我们直到，在go中我们是可以给返回的参数命名的，例如`func example()(data int,err error)`,那么如果结合defer使用就有一些细节问题：
 ```go
 func Defer4(){
-	test1:=func()(int){
-		a:=1
-		defer func(){
-		    a++	
+    test1:=func()(int){
+        a:=1
+        defer func(){
+            a++
         }()
-		return a
+        return a
     }
-	test2:=func()(a int){
-		a=1//这里不用:=是因为在返回参数那里已经声明了
-		defer func(){
-			a++
+    test2:=func()(a int){
+        a=1//这里不用:=是因为在返回参数那里已经声明了
+        defer func(){
+            a++
         }()
-		return //等价于return a，相当于是默认return你返回参数中声明的变量
+        return //等价于return a，相当于是默认return你返回参数中声明的变量
     }
-	fmt.Println(test1())//输出 1
+    fmt.Println(test1())//输出 1
     fmt.Println(test2())//输出 2
 }
 ```
@@ -551,13 +551,13 @@ func Select1() {
 当然有个时候我们不希望select阻塞，就可以使用`default`：
 ```go
 func Select2(){
-	ch1:=make(chan struct{},1)
+    ch1:=make(chan struct{},1)
     //ch1<-struct{}{}
-	select{
-	case <-ch1:
+    select{
+    case <-ch1:
         fmt.Println("ch1接收到数据")
     default:
-		fmt.Println("未接收数据，继续执行")
+        fmt.Println("未接收数据，继续执行")
     }
 }
 ```
@@ -577,10 +577,10 @@ func Select2(){
 context.Context本质上是一个接口：
 ```go
 type Context interface{
-	Deadline()(deadline time.Time,ok bool)//获取截止时间以及是否超时
-	Done()<-chan struct{}//取消的时候会close这个通道，后面会讲用法
-	Err()error//返回取消的原因，一般是：Canceled/DeadlineExceeded
-	Value(key any)any//获取值，和map差不多
+    Deadline()(deadline time.Time,ok bool)//获取截止时间以及是否超时
+    Done()<-chan struct{}//取消的时候会close这个通道，后面会讲用法
+    Err()error//返回取消的原因，一般是：Canceled/DeadlineExceeded
+    Value(key any)any//获取值，和map差不多
 }
 ```
 实际上我们直接用官方的实现就行。
@@ -599,12 +599,12 @@ ctx=context.WithValue(ctx,"key","value")//储存数据，不过不要放业务�
 前面接口中看到，Done方法会返回一个只读的channel，所以用法其实很简单，比如我们可以把前面的那个超时的例子改一下：
 ```go
 func Context1(){
-	ctx,cancel:=context.WithTimeout(context.Background(),2*time.Second)
-	defer cancel()
-	ch:=make(chan int,10)
-	var wg sync.WaitGroup
-	wg.Go(func(){
-		ticker:=time.NewTicker(1*time.Second)
+    ctx,cancel:=context.WithTimeout(context.Background(),2*time.Second)
+    defer cancel()
+    ch:=make(chan int,10)
+    var wg sync.WaitGroup
+    wg.Go(func(){
+        ticker:=time.NewTicker(1*time.Second)
         a:=0
         for{
             select{
@@ -619,45 +619,45 @@ func Context1(){
             }
         }
     })
-	
-	wg.Go(func(){
-	    for{
-			select{
-			case data,ok:=<-ch:
-				if !ok{
+
+    wg.Go(func(){
+        for{
+            select{
+            case data,ok:=<-ch:
+                if !ok{
                     fmt.Println("2 已退出接收")
                     return
                 }
-				fmt.Println("2 已接收数据：", data)
+                fmt.Println("2 已接收数据：", data)
             case <-ctx.Done():
-				fmt.Println("2 已退出接收")
+                fmt.Println("2 已退出接收")
                 return
-			}
-        }
-	})
-	wg.Wait()
-}
-
-func Context2(){
-	ctx,cancel:=context.WithCancel(context.Background())
-	var wg sync.WaitGroup
-	wg.Go(func(){
-		ticker:=time.NewTicker(500*time.Millisecond)
-		fmt.Println("准备就绪")
-		for{
-			select{
-			case <-ticker.C:
-				fmt.Println("ping")
-			case <-ctx.Done():
-				ticker.Stop()
-				fmt.Println("已退出")
-				return
             }
         }
     })
-	time.Sleep(3*time.Second)
-	cancel()
-	wg.Wait()
+    wg.Wait()
+}
+
+func Context2(){
+    ctx,cancel:=context.WithCancel(context.Background())
+    var wg sync.WaitGroup
+    wg.Go(func(){
+        ticker:=time.NewTicker(500*time.Millisecond)
+        fmt.Println("准备就绪")
+        for{
+            select{
+            case <-ticker.C:
+                fmt.Println("ping")
+            case <-ctx.Done():
+                ticker.Stop()
+                fmt.Println("已退出")
+                return
+            }
+        }
+    })
+    time.Sleep(3*time.Second)
+    cancel()
+    wg.Wait()
 }
 ```
 可以看到，不管是手动退出还是超时退出都会导致这个context关闭
@@ -724,19 +724,19 @@ func Sync1(){
 来上个例子：
 ```go
 func Sync2(){
-	var m sync.Map//还是0值可用，貌似sync包的常用的都是0值可用，没了解过hh
-	//1. 存：Store(key,value)
-	m.Store("name","望海夯")
-	m.Store("age",18)
-	
-	//2. 取：Load(key)(value any,ok bool)
-	name,ok:=m.Load("name")
-	if ok{
-		fmt.Println(name)
+    var m sync.Map//还是0值可用，貌似sync包的常用的都是0值可用，没了解过hh
+    //1. 存：Store(key,value)
+    m.Store("name","望海夯")
+    m.Store("age",18)
+
+    //2. 取：Load(key)(value any,ok bool)
+    name,ok:=m.Load("name")
+    if ok{
+        fmt.Println(name)
     }
-	
-	//3. 存在就返回，不存在就写入：LoadOrStore
-	v, loaded := m.LoadOrStore("gender", "male")
+
+    //3. 存在就返回，不存在就写入：LoadOrStore
+    v, loaded := m.LoadOrStore("gender", "male")
     fmt.Println(v, loaded) // loaded=true代表原本就存在
 
     // 4. 删除：Delete

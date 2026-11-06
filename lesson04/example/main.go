@@ -33,7 +33,6 @@ func Add1() {
 	}
 	fmt.Println(a) //输出 100000 很合理
 }
-
 func Add2() {
 	a := 0
 	for range 10 {
