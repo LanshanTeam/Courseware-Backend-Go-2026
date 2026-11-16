@@ -16,7 +16,7 @@
 | 03 | 常用标准库         | fmt、io、os、strings、bytes、time、math/rand、文件与目录操作等      | 凌珑  |
 | 04 | 并发编程          | 操作系统并发基础、goroutine、channel、互斥锁、WaitGroup、常见并发模型      | 刘庆喆  |
 | 05 | Web 开发        | 计算机网络基础、HTTP、Gin 框架与中间件、Hertz、项目结构、RESTful API       | 盛小峰  |
-| 06 | MySQL         | 安装与命令行操作、SQL 语句、Go 数据库操作、GORM ORM 框架                  | 唐浩铭 |
+| 06 | 关系型数据库 (MySQL & PG) | 安装与容器化部署、SQL 核心语法、MySQL 与 PostgreSQL 对比、GORM 框架实战 | 唐浩铭 |
 | 07 | 非关系型数据库       | Redis（缓存、锁）、MongoDB（文档存储）                              | 待定  |
 | 08 | 容器化           | Linux 基础、Docker 基础概念、镜像与容器、Dockerfile 编写、Compose 编排 | 待定  |
 | 09 | 单体项目实战        | 日志与配置管理、Web + DB + Redis 实战、Docker 部署与复盘优化             | 陈浩然  |
